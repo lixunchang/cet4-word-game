@@ -1,4 +1,4 @@
- function __vite__mapDeps(indexes) {
+function __vite__mapDeps(indexes) {
   if (!__vite__mapDeps.viteFileDeps) {
     __vite__mapDeps.viteFileDeps = ["./AboutView-DII7KTd3.js","./AboutView-C6Dx7pxG.css"]
   }
