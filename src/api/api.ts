@@ -31,10 +31,10 @@ export class DictionaryService {
    * @return {HttpResponse} result
    */
   static async getWordList() {
-    return request('/lyc8503/baicizhan-word-meaning-API/data/list.json', {}, 'get')
+    return request('https://cdn.jsdelivr.net/gh/lyc8503/baicizhan-word-meaning-API/data/list.json', {}, 'get')
   }
 
   static async getWordMean(word: string) {
-    return request(`/lyc8503/baicizhan-word-meaning-API/data/words/${word}.json`, {}, 'get')
+    return request(`https://cdn.jsdelivr.net/gh/lyc8503/baicizhan-word-meaning-API/data/words/${word}.json`, {}, 'get')
   }
 }
