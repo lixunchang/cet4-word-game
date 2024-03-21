@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { DictionaryService } from '@/api/api';
 import lettersAudio from '@/utils/letter';
+import allWords from '@/utils/words';
 import { onMounted, onUnmounted, reactive, computed, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { ElLoading } from 'element-plus'
+import { isLetter } from '@/utils/keyborad';
  
 const { currentRoute } = useRouter();
 const route = currentRoute.value;
 
+const type: any = route.query.type||'etc4';
+
 const state: any = reactive({
-  total: 0,
-  list: [],
+  list: allWords[type] || allWords.etc4,
   current: 1,
   audioIndex: 0,
   explainStatus: '',
@@ -21,6 +24,7 @@ const state: any = reactive({
 })
 
 const currentWord = computed(()=>{
+  
   return route.query.word || state.list?.[state.current]?.split(' ')[0] || ''
 })
 
@@ -29,7 +33,7 @@ const currentExplain = computed(()=>{
 })
 
 const handleClickSentence=(sentence: string)=>{
-  const audio = new Audio(`http://dict.youdao.com/dictvoice?type=0&audio=${sentence}`);
+  const audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${sentence}`);
   audio.play();
 }
 
@@ -53,7 +57,7 @@ const handleKeyPress = (event:any) => {
       ElMessage.error('已经是第一个了');
     }
   }else if (event.key === ' ') {
-    audio = new Audio(`http://dict.youdao.com/dictvoice?type=0&audio=${currentWord.value}`);
+    audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentWord.value}`);
     if(state.audioIndex > currentWord.value.length){
       state.audioIndex = 0
     }
@@ -71,10 +75,10 @@ const handleKeyPress = (event:any) => {
     }else{
       state.audioIndex++;
     }
-  }else{
+  }else if(isLetter(event)){
     const errorChar = currentWord.value[state.audioIndex % currentWord.value.length];
     if(errorChar){
-      ElMessage.error('你错了, 正确的字母是：' + currentWord.value[state.audioIndex % currentWord.value.length])
+      ElMessage.error('请输入：' + currentWord.value[state.audioIndex % currentWord.value.length])
     }
   }
   if(audio){
@@ -82,22 +86,22 @@ const handleKeyPress = (event:any) => {
   }
 };
 
-onMounted(() => {  
+onMounted(() => {
   window.addEventListener('keydown', handleKeyPress);
-  const wordsJson = localStorage.getItem('word_list');
   state.current = route.query.index||localStorage.getItem('current_index')||0;
+  if(type==='etc4'){
+    return;
+  }
+  const wordsJson = localStorage.getItem('word_list');
   if(wordsJson){
     const data = JSON.parse(wordsJson);
     state.list = data.list;
-    state.total = data.total;
     return;
   }
   DictionaryService.getWordList().then(({data}:any)=>{
     state.list = data.list;
-    state.total = data.total;
     localStorage.setItem('word_list', JSON.stringify(data))
   })
-
 });
 
 watch(state.current,(val:number)=>{
@@ -125,7 +129,7 @@ watch(currentWord, (newWord: string)=>{
   }).finally(()=>{
     loadingInstance.close()
   })
-})
+}, { immediate: true })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyPress);
