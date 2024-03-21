@@ -59,7 +59,7 @@ const handleKeyPress = (event:any) => {
     }
   }else if(currentWord.value[state.audioIndex % (currentWord.value.length)]===event.key){
     const config = lettersAudio[event.key];
-    audio = new Audio(config.url);
+    audio = new Audio(location.origin+location.pathname+config.url);
     audio.playbackRate = 2; // 播放速度为0.5 - 2倍
     Object.keys(config).forEach(key=>{
       if(key!=='url'){
