@@ -5,7 +5,7 @@ import allWords from '@/utils/words';
 import { onMounted, onUnmounted, reactive, computed, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
-import { ElLoading } from 'element-plus'
+// import { ElLoading } from 'element-plus'
 import { isLetter } from '@/utils/keyborad';
  
 const { currentRoute } = useRouter();
@@ -65,11 +65,10 @@ const handleKeyPress = (event:any) => {
       ElMessage.error('已经是第一个了');
     }
   }else if(['ArrowUp', 'ArrowDown', 'Shift'].includes(event.key)){
-    console.log(currentExplain.value?.[state.enterAudio], currentExplain.value, state.enterAudio)
     if(currentExplain.value?.[state.enterAudio]){
       audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentExplain.value[state.enterAudio]}`);
       state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
-    }else{
+    }else if(currentExplain.value){
       state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
     }
   }else if (event.key === ' ') {
@@ -134,11 +133,11 @@ watch(currentWord, (newWord: string)=>{
     return;
   }
   state.explainStatus = 'loading';
-  const loadingInstance = ElLoading.service({
-    target: '.explain_status',
-    text: '这个单词几个意思...',
-    fullscreen: false
-  })
+  // const loadingInstance = ElLoading.service({
+  //   target: '.explain_status',
+  //   text: '这个单词几个意思...',
+  //   fullscreen: false
+  // })
   DictionaryService.getWordMean(newWord).then(({data}:any)=>{
     state.explain[newWord] = data;
     localStorage.setItem(newWord, JSON.stringify(data))
@@ -146,7 +145,7 @@ watch(currentWord, (newWord: string)=>{
   }).catch(()=>{
     state.explainStatus = 'error';
   }).finally(()=>{
-    loadingInstance.close()
+    //loadingInstance.close()
   })
 }, { immediate: true })
 
@@ -201,7 +200,7 @@ const handleReload=()=>{
         </p>
       </div>
       <div v-else-if="state.explainStatus">
-        <span v-if="state.explainStatus === 'loading'"></span>
+        <span v-if="state.explainStatus === 'loading'" style="color:#999;">努力查询中...</span>
         <span style="cursor:pointer;" v-if="state.explainStatus === 'error'" @click="handleReload">查询失败，请刷新重试</span>
       </div>
     </div>
