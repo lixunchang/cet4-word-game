@@ -160,6 +160,7 @@ const handleReload=()=>{
 <template>
   <main>
     <div class="header">
+      <a class="help" target="_blank" href="https://gitee.com/gexinpai/cet4-word-game/blob/main/README.md">使用帮助</a>
       <span class="steps">{{state.current}} / {{state.list.length}}</span>
     </div>
     <div class="playground" :data-word="currentWord">
@@ -213,9 +214,21 @@ const handleReload=()=>{
       position: absolute;
       top: 0;
       left: 0;
-      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .help{
+        color: #444;
+        &:hover{
+          color: #999;
+          background: transparent;
+        }
+      }
       .steps{
-        color:#222;
+        color:#2b2b2b;
+        &:hover{
+          color: #999;
+        }
       }
     }
   }
