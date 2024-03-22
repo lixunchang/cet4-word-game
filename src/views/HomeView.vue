@@ -18,8 +18,15 @@ const state: any = reactive({
   current: 1,
   audioIndex: 0,
   explainStatus: '',
+  enterAudio: 'mean_en',//'sentence'
   explain: {
-
+    abandoned:{
+      mean_en: 'forsaken by owner or keeper; free from constraint.',
+      mean_cn: 'adj. 被抛弃的；废弃的，放纵的，不再考虑的; v. 放弃，逃离，中止（abandon 的过去式和过去分词）',
+      word_etyma: '',
+      sentence: `At the captain's order, they abandoned ship.`,
+      sentence_trans: '在船长的命令下，他们弃船离开了。'
+    }
   }
 })
 
@@ -39,22 +46,28 @@ const handleClickSentence=(sentence: string)=>{
 
 
 const handleKeyPress = (event:any) => {
-  // if(!state.currentWord){
-  //   //state.audioIndex>=0
-  //   return;
-  // }
+  if(event.altKey||event.ctrlKey||event.metaKey){
+    return;
+  }
   let audio:any;
-  if(['ArrowRight','ArrowUp'].includes(event.key)){
+  if(['ArrowRight','Enter'].includes(event.key)){
     state.current++;
-    state.audioIndex = 0
+    state.audioIndex = 0;
+    state.enterAudio = 'meau_en';
     localStorage.setItem('current_index', state.current);
-  }else if(['ArrowLeft','ArrowDown'].includes(event.key)){
+  }else if(['ArrowLeft'].includes(event.key)){
     if(state.current>0){ 
       state.current--;  
       state.audioIndex = 0;
+      state.enterAudio = 'meau_en';
       localStorage.setItem('current_index', state.current);
     }else{
       ElMessage.error('已经是第一个了');
+    }
+  }else if(['ArrowUp', 'ArrowDown', 'Shift'].includes(event.key)){
+    if(currentExplain.value?.[state.enterAudio]){
+      audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentExplain.value[state.enterAudio]}`);
+      state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
     }
   }else if (event.key === ' ') {
     audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentWord.value}`);
@@ -109,7 +122,9 @@ watch(state.current,(val:number)=>{
 })
 
 watch(currentWord, (newWord: string)=>{
-  console.log('newWord', newWord)
+  if(state.explain[newWord]){
+    return;
+  }
   const wordJson = localStorage.getItem(newWord);
   if(wordJson){
     state.explain[newWord] = JSON.parse(wordJson);
@@ -118,7 +133,8 @@ watch(currentWord, (newWord: string)=>{
   state.explainStatus = 'loading';
   const loadingInstance = ElLoading.service({
     target: '.explain_status',
-    text: '这个单词你认识吗...'
+    text: '这个单词几个意思...',
+    fullscreen: false
   })
   DictionaryService.getWordMean(newWord).then(({data}:any)=>{
     state.explain[newWord] = data;
@@ -157,11 +173,11 @@ const handleReload=()=>{
     </div>
     <div class="explain_status">
       <div class="explain" v-if="currentExplain">
-        <p style="color:#999;cursor:pointer;" @click="handleClickSentence(currentExplain.mean_en)">
+        <p v-if="currentExplain.mean_en" style="color:#999;cursor:pointer;" @click="handleClickSentence(currentExplain.mean_en)">
           <label>英文：</label>
           <span style="flex:1;" class="ellipsis_word">{{currentExplain.mean_en}}</span>
         </p>
-        <p class="chinese">
+        <p v-if="currentExplain.mean_cn" class="chinese">
           <label>中文：</label>
           <span style="flex:1;text-align:left;color:red;font-weight: bold;">
             <span style="flex:1;">{{currentExplain.mean_cn}}</span>
@@ -171,11 +187,11 @@ const handleReload=()=>{
           <label>词根：</label>
           <span style="flex:1;color:#555;">{{currentExplain.word_etyma}}</span>
         </p>
-        <p @click="handleClickSentence(currentExplain.sentence)" style="cursor: pointer;">
+        <p v-if="currentExplain.sentence" @click="handleClickSentence(currentExplain.sentence)" style="cursor: pointer;">
           <label>例句：</label>
           <span style="flex:1;color:#666;">{{currentExplain.sentence}}</span>
         </p>
-        <p>
+        <p v-if="currentExplain.sentence_trans">
           <label>翻译：</label>
           <span style="flex:1;text-align:left;color:#b2b2b2;">{{currentExplain.sentence_trans}}</span>
         </p>
