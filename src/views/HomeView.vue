@@ -53,18 +53,19 @@ const handleKeyPress = (event:any) => {
   if(['ArrowRight','Enter'].includes(event.key)){
     state.current++;
     state.audioIndex = 0;
-    state.enterAudio = 'meau_en';
+    state.enterAudio = 'mean_en';
     localStorage.setItem('current_index', state.current);
   }else if(['ArrowLeft'].includes(event.key)){
     if(state.current>0){ 
       state.current--;  
       state.audioIndex = 0;
-      state.enterAudio = 'meau_en';
+      state.enterAudio = 'mean_en';
       localStorage.setItem('current_index', state.current);
     }else{
       ElMessage.error('已经是第一个了');
     }
   }else if(['ArrowUp', 'ArrowDown', 'Shift'].includes(event.key)){
+    console.log(currentExplain.value?.[state.enterAudio], currentExplain.value, state.enterAudio)
     if(currentExplain.value?.[state.enterAudio]){
       audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentExplain.value[state.enterAudio]}`);
       state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
