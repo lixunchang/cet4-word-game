@@ -69,6 +69,8 @@ const handleKeyPress = (event:any) => {
     if(currentExplain.value?.[state.enterAudio]){
       audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentExplain.value[state.enterAudio]}`);
       state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
+    }else{
+      state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
     }
   }else if (event.key === ' ') {
     audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentWord.value}`);
