@@ -4,12 +4,12 @@ import lettersAudio from '@/utils/letter';
 import allWords from '@/utils/words';
 import { onMounted, onUnmounted, reactive, computed, watch } from 'vue';
 import { ElMessage } from 'element-plus';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 // import { ElLoading } from 'element-plus'
 import { isLetter } from '@/utils/keyborad';
  
-const { currentRoute } = useRouter();
-const route = currentRoute.value;
+const router = useRouter();
+const route = useRoute();
 
 const type: any = route.query.type||'etc4';
 
@@ -26,12 +26,14 @@ const state: any = reactive({
       word_etyma: '',
       sentence: `At the captain's order, they abandoned ship.`,
       sentence_trans: '在船长的命令下，他们弃船离开了。'
+    },
+    Christ: {
+      mean_cn: '基督; 耶稣基督'
     }
   }
 })
 
 const currentWord = computed(()=>{
-  
   return route.query.word || state.list?.[state.current]?.split(' ')[0] || ''
 })
 
@@ -55,6 +57,7 @@ const handleKeyPress = (event:any) => {
     state.audioIndex = 0;
     state.enterAudio = 'mean_en';
     localStorage.setItem('current_index', state.current);
+    resetRouter();
   }else if(['ArrowLeft'].includes(event.key)){
     if(state.current>0){ 
       state.current--;  
@@ -64,7 +67,8 @@ const handleKeyPress = (event:any) => {
     }else{
       ElMessage.error('已经是第一个了');
     }
-  }else if(['ArrowUp', 'ArrowDown', 'Shift'].includes(event.key)){
+  }else if(['ArrowUp', 'ArrowDown', 'Tab'].includes(event.key)){
+    event.preventDefault();
     if(currentExplain.value?.[state.enterAudio]){
       audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentExplain.value[state.enterAudio]}`);
       state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
@@ -73,11 +77,15 @@ const handleKeyPress = (event:any) => {
     }
   }else if (event.key === ' ') {
     audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentWord.value}`);
-    if(state.audioIndex > currentWord.value.length){
-      state.audioIndex = 0
-    }
+    // console.log('message==>', state.audioIndex)
+    // if(state.audioIndex > (currentWord.value.length-1)*2){
+    //   state.audioIndex = 0
+    // }
   }else if(currentWord.value[state.audioIndex % (currentWord.value.length)]===event.key){
-    const config = lettersAudio[event.key];
+    const config = lettersAudio[event.key.toLowerCase()];
+    if(!config?.url){
+      ElMessage.error('程序遇到Bug，请联系QQ: 907203644')
+    }
     audio = new Audio(location.origin+location.pathname+config.url);
     audio.playbackRate = 2; // 播放速度为0.5 - 2倍
     Object.keys(config).forEach(key=>{
@@ -101,6 +109,52 @@ const handleKeyPress = (event:any) => {
   }
 };
 
+const resetRouter=()=>router.push({ query: {} });
+
+const getWordExplain=(newWord: string)=>{
+  state.explainStatus = 'loading';
+  // const loadingInstance = ElLoading.service({
+  //   target: '.explain_status',
+  //   text: '这个单词几个意思...',
+  //   fullscreen: false
+  // })
+  DictionaryService.getWordMean(newWord).then(({data}:any)=>{
+    state.explain[newWord] = data;
+    localStorage.setItem(newWord, JSON.stringify(data))
+    state.explainStatus = '';
+  }).catch(()=>{
+    state.explainStatus = 'error';
+  }).finally(()=>{
+    //loadingInstance.close()
+  })
+}
+
+
+
+watch(()=>state.current, (val:number)=>{
+  localStorage.setItem('current_index','' + val);
+  localStorage.setItem('max_index', '' + Math.max(val, +(localStorage.getItem('max_index') || 0)));
+})
+
+watch(currentWord, (newWord: string)=>{
+  if(state.explain[newWord]){
+    return;
+  }
+  const wordJson = localStorage.getItem(newWord);
+  if(wordJson){
+    state.explain[newWord] = JSON.parse(wordJson);
+    return;
+  }
+  getWordExplain(newWord);
+}, { immediate: true })
+
+watch(()=>route.query, (val)=>{
+  if(Object.keys(val).length>0){
+    location.reload()
+  }
+})
+
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeyPress);
   state.current = route.query.index||localStorage.getItem('current_index')||0;
@@ -119,43 +173,10 @@ onMounted(() => {
   })
 });
 
-watch(state.current,(val:number)=>{
-  localStorage.set('max_index',Math.max(val, localStorage.get('max_index')||0) );
-})
-
-watch(currentWord, (newWord: string)=>{
-  if(state.explain[newWord]){
-    return;
-  }
-  const wordJson = localStorage.getItem(newWord);
-  if(wordJson){
-    state.explain[newWord] = JSON.parse(wordJson);
-    return;
-  }
-  state.explainStatus = 'loading';
-  // const loadingInstance = ElLoading.service({
-  //   target: '.explain_status',
-  //   text: '这个单词几个意思...',
-  //   fullscreen: false
-  // })
-  DictionaryService.getWordMean(newWord).then(({data}:any)=>{
-    state.explain[newWord] = data;
-    localStorage.setItem(newWord, JSON.stringify(data))
-    state.explainStatus = '';
-  }).catch(()=>{
-    state.explainStatus = 'error';
-  }).finally(()=>{
-    //loadingInstance.close()
-  })
-}, { immediate: true })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyPress);
 });
-
-const handleReload=()=>{
-  location.reload();
-}
 
 </script>
 
@@ -201,7 +222,7 @@ const handleReload=()=>{
       </div>
       <div v-else-if="state.explainStatus">
         <span v-if="state.explainStatus === 'loading'" style="color:#999;">努力查询中...</span>
-        <span style="cursor:pointer;" v-if="state.explainStatus === 'error'" @click="handleReload">查询失败，请刷新重试</span>
+        <span style="cursor:pointer;" v-if="state.explainStatus === 'error'" @click="getWordExplain(currentWord)">查询失败，请刷新重试</span>
       </div>
     </div>
   </main>
@@ -265,7 +286,6 @@ const handleReload=()=>{
     }
   }
   .explain{
-    padding: 24px;
     font-size: 26px;
     color: #333;
     max-width: 1000px;
