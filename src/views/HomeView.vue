@@ -11,7 +11,8 @@ import { isLetter } from '@/utils/keyborad';
 const router = useRouter();
 const route = useRoute();
 
-const type: any = route.query.type||'etc4';
+const type: any = route.query.type || 'etc4';
+const review: any = route.query.review || '0';
 
 const state: any = reactive({
   list: allWords[type] || allWords.etc4,
@@ -19,6 +20,7 @@ const state: any = reactive({
   audioIndex: 0,
   explainStatus: '',
   enterAudio: 'mean_en',//'sentence'
+  reviewSentence: false, // 复习状态展示词根和例句
   explain: {
     abandoned:{
       mean_en: 'forsaken by owner or keeper; free from constraint.',
@@ -56,6 +58,7 @@ const handleKeyPress = (event:any) => {
     state.current++;
     state.audioIndex = 0;
     state.enterAudio = 'mean_en';
+    state.reviewSentence = false;
     localStorage.setItem('current_index', state.current);
     resetRouter();
   }else if(['ArrowLeft'].includes(event.key)){
@@ -63,12 +66,17 @@ const handleKeyPress = (event:any) => {
       state.current--;  
       state.audioIndex = 0;
       state.enterAudio = 'mean_en';
+      state.reviewSentence = false;
       localStorage.setItem('current_index', state.current);
     }else{
       ElMessage.error('已经是第一个了');
     }
   }else if(['ArrowUp', 'ArrowDown', 'Tab'].includes(event.key)){
-    event.preventDefault();
+    event.preventDefault?.();
+    if(review!=='0' && !state.reviewSentence){
+      state.reviewSentence = true;
+      return;
+    }
     if(currentExplain.value?.[state.enterAudio]){
       audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentExplain.value[state.enterAudio]}`);
       state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
@@ -109,7 +117,7 @@ const handleKeyPress = (event:any) => {
   }
 };
 
-const resetRouter=()=>router.push({ query: {} });
+const resetRouter=()=>router.push({ query: review !== '0'?{review}:{} });
 
 const getWordExplain=(newWord: string)=>{
   state.explainStatus = 'loading';
@@ -137,6 +145,8 @@ watch(()=>state.current, (val:number)=>{
 })
 
 watch(currentWord, (newWord: string)=>{
+  if(!newWord) return;
+  state.audioIndex = review * newWord.length;
   if(state.explain[newWord]){
     return;
   }
@@ -157,7 +167,7 @@ watch(()=>route.query, (val)=>{
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeyPress);
-  state.current = route.query.index||localStorage.getItem('current_index')||0;
+  state.current = route.query.index||localStorage.getItem('current_index') || 0;
   if(type==='etc4'){
     return;
   }
@@ -207,15 +217,15 @@ onUnmounted(() => {
             <span style="flex:1;">{{currentExplain.mean_cn}}</span>
           </span>
         </p>
-        <p v-if="currentExplain.word_etyma">
+        <p v-if="currentExplain.word_etyma&&(review==='0'||state.reviewSentence)">
           <label>词根：</label>
           <span style="flex:1;color:#555;">{{currentExplain.word_etyma}}</span>
         </p>
-        <p v-if="currentExplain.sentence" @click="handleClickSentence(currentExplain.sentence)" style="cursor: pointer;">
+        <p v-if="currentExplain.sentence&&(review==='0'||state.reviewSentence)" @click="handleClickSentence(currentExplain.sentence)" style="cursor: pointer;">
           <label>例句：</label>
           <span style="flex:1;color:#666;">{{currentExplain.sentence}}</span>
         </p>
-        <p v-if="currentExplain.sentence_trans">
+        <p v-if="currentExplain.sentence_trans&&(review==='0'||state.reviewSentence)">
           <label>翻译：</label>
           <span style="flex:1;text-align:left;color:#b2b2b2;">{{currentExplain.sentence_trans}}</span>
         </p>
@@ -223,6 +233,48 @@ onUnmounted(() => {
       <div v-else-if="state.explainStatus">
         <span v-if="state.explainStatus === 'loading'" style="color:#999;">努力查询中...</span>
         <span style="cursor:pointer;" v-if="state.explainStatus === 'error'" @click="getWordExplain(currentWord)">查询失败，请刷新重试</span>
+      </div>
+    </div>
+    <div class="key-board">
+      <div class="action">
+        <span @click="handleKeyPress({key:'ArrowLeft'})">上一个</span>
+        <span @click="handleKeyPress({key:'Tab'})">Tab</span>
+        <span @click="handleKeyPress({key:' '})">空格</span>
+        <span @click="handleKeyPress({key:'ArrowRight'})">下一个</span>
+      </div>
+      <div class="letters">
+        <div>
+          <span @click="handleKeyPress({key:'q'})">Q</span>
+          <span @click="handleKeyPress({key:'w'})">W</span>
+          <span @click="handleKeyPress({key:'e'})">E</span>
+          <span @click="handleKeyPress({key:'r'})">R</span>
+          <span @click="handleKeyPress({key:'t'})">T</span>
+          <span @click="handleKeyPress({key:'y'})">Y</span>
+          <span @click="handleKeyPress({key:'u'})">U</span>
+          <span @click="handleKeyPress({key:'i'})">I</span>
+          <span @click="handleKeyPress({key:'o'})">O</span>
+          <span @click="handleKeyPress({key:'p'})">P</span>
+        </div>
+        <div>
+          <span @click="handleKeyPress({key:'a'})">A</span>
+          <span @click="handleKeyPress({key:'s'})">S</span>
+          <span @click="handleKeyPress({key:'d'})">D</span>
+          <span @click="handleKeyPress({key:'f'})">F</span>
+          <span @click="handleKeyPress({key:'g'})">G</span>
+          <span @click="handleKeyPress({key:'h'})">H</span>
+          <span @click="handleKeyPress({key:'j'})">J</span>
+          <span @click="handleKeyPress({key:'k'})">K</span>
+          <span @click="handleKeyPress({key:'l'})">L</span>
+        </div>
+        <div>
+          <span @click="handleKeyPress({key:'z'})">Z</span>
+          <span @click="handleKeyPress({key:'x'})">X</span>
+          <span @click="handleKeyPress({key:'c'})">C</span>
+          <span @click="handleKeyPress({key:'v'})">V</span>
+          <span @click="handleKeyPress({key:'b'})">B</span>
+          <span @click="handleKeyPress({key:'n'})">N</span>
+          <span @click="handleKeyPress({key:'m'})">M</span>
+        </div>
       </div>
     </div>
   </main>
@@ -261,12 +313,12 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 88px;
     font-weight: bold;
     letter-spacing: 12px;
     .char{
       width: auto;
       min-width: 30px;
+      font-size: 88px;
       height: 100%;
       color: white;
       vertical-align: middle;
@@ -321,5 +373,75 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     height: 40vh;
+  }
+  .key-board{
+    display: none;
+  }
+  @media screen and (max-width: 600px) {
+    .playground {
+      height: 30vh;
+      letter-spacing: 4px;
+      .char{
+        min-width: 16px;
+        font-size: 60px;
+      }
+    }
+    .explain_status {
+      height: calc(70vh - 250px);
+      padding: 10px 14px;
+      overflow-y: auto;
+      .explain{
+        font-size: 20px;
+        p{
+          margin-bottom: 10px;
+        }
+        .ellipsis_word{
+          -webkit-line-clamp: 3; /* 控制显示的行数 */
+        }
+      }
+      label{
+        width: 64px;
+      }
+    }
+    .key-board{
+      display: block;
+      padding: 14px;
+      height: 250px;
+      .action{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        span{
+          border-radius: 10px 10px 0 0;
+          border: 1px solid #eee;
+          padding: 6px;
+          flex: 1;
+          text-align: center;
+          &:hover{
+            background: #e2e2e2;
+          }
+        }
+      }
+      .letters{
+        div{
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10px;
+          span{
+            border-radius: 10px 10px 0 0;
+            border: 1px solid #eee;
+            padding: 12px 0;
+            flex: 1;
+            text-align: center;
+            &:hover{
+              background: #e2e2e2;
+              color: #999;
+            }
+          }
+        }
+      }
+    }
   }
 </style>@/constant/letter

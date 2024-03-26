@@ -13,11 +13,11 @@ const lettersAudio: any = {
   },
   d:{
     url: 'letters/d.mp3',
-    volume: 0.5,
+    volume: 0.4,
   },
   e:{
     url: 'letters/e.mp3',
-    volume: 0.5,
+    volume: 0.7,
   },
   f:{
     url: 'letters/f.mp3',
@@ -53,7 +53,7 @@ const lettersAudio: any = {
   },
   n:{
     url: 'letters/n.mp3',
-    volume: 0.5,
+    volume: 0.6,
   },
   o:{
     url: 'letters/o.mp3',
