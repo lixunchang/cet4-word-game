@@ -208,25 +208,25 @@ onUnmounted(() => {
     <div class="explain_status">
       <div class="explain" v-if="currentExplain">
         <p v-if="currentExplain.mean_en" style="color:#999;cursor:pointer;" @click="handleClickSentence(currentExplain.mean_en)">
-          <label>英文：</label>
+          <label>英文</label>
           <span style="flex:1;" class="ellipsis_word">{{currentExplain.mean_en}}</span>
         </p>
         <p v-if="currentExplain.mean_cn" class="chinese">
-          <label>中文：</label>
+          <label>中文</label>
           <span style="flex:1;text-align:left;color:red;font-weight: bold;">
             <span style="flex:1;">{{currentExplain.mean_cn}}</span>
           </span>
         </p>
         <p v-if="currentExplain.word_etyma&&(review==='0'||state.reviewSentence)">
-          <label>词根：</label>
+          <label>词根</label>
           <span style="flex:1;color:#555;">{{currentExplain.word_etyma}}</span>
         </p>
         <p v-if="currentExplain.sentence&&(review==='0'||state.reviewSentence)" @click="handleClickSentence(currentExplain.sentence)" style="cursor: pointer;">
-          <label>例句：</label>
+          <label>例句</label>
           <span style="flex:1;color:#666;">{{currentExplain.sentence}}</span>
         </p>
         <p v-if="currentExplain.sentence_trans&&(review==='0'||state.reviewSentence)">
-          <label>翻译：</label>
+          <label>翻译</label>
           <span style="flex:1;text-align:left;color:#b2b2b2;">{{currentExplain.sentence_trans}}</span>
         </p>
       </div>
@@ -236,12 +236,6 @@ onUnmounted(() => {
       </div>
     </div>
     <div class="key-board">
-      <div class="action">
-        <span @click="handleKeyPress({key:'ArrowLeft'})">上一个</span>
-        <span @click="handleKeyPress({key:'Tab'})">Tab</span>
-        <span @click="handleKeyPress({key:' '})">空格</span>
-        <span @click="handleKeyPress({key:'ArrowRight'})">下一个</span>
-      </div>
       <div class="letters">
         <div>
           <span @click="handleKeyPress({key:'q'})">Q</span>
@@ -275,6 +269,11 @@ onUnmounted(() => {
           <span @click="handleKeyPress({key:'n'})">N</span>
           <span @click="handleKeyPress({key:'m'})">M</span>
         </div>
+      </div>
+      <div class="action">
+        <span @click="handleKeyPress({key:'ArrowLeft'})">上一个</span>
+        <span style="flex:2;" @click="handleKeyPress({key:' '})">空格</span>
+        <span @click="handleKeyPress({key:'ArrowRight'})">下一个</span>
       </div>
     </div>
   </main>
@@ -379,7 +378,7 @@ onUnmounted(() => {
   }
   @media screen and (max-width: 600px) {
     .playground {
-      height: 30vh;
+      height: 24vh;
       letter-spacing: 4px;
       .char{
         min-width: 16px;
@@ -387,25 +386,27 @@ onUnmounted(() => {
       }
     }
     .explain_status {
-      height: calc(70vh - 250px);
-      padding: 10px 14px;
+      height: calc(76vh - 250px);
+      padding: 10px 14px 0;
       overflow-y: auto;
       .explain{
-        font-size: 20px;
+        font-size: 18px;
         p{
-          margin-bottom: 10px;
+          margin-bottom: 2px;
         }
         .ellipsis_word{
           -webkit-line-clamp: 3; /* 控制显示的行数 */
         }
       }
       label{
-        width: 64px;
+        width: 48px;
+        line-height: 30px;
+        font-size: 16px;
       }
     }
     .key-board{
       display: block;
-      padding: 14px;
+      padding: 6px 14px 12px;
       height: 250px;
       .action{
         display: flex;
@@ -415,7 +416,7 @@ onUnmounted(() => {
         span{
           border-radius: 10px 10px 0 0;
           border: 1px solid #eee;
-          padding: 6px;
+          padding: 6px 0;
           flex: 1;
           text-align: center;
           &:hover{
@@ -428,11 +429,11 @@ onUnmounted(() => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 10px;
+          margin-bottom: 12px;
           span{
             border-radius: 10px 10px 0 0;
             border: 1px solid #eee;
-            padding: 12px 0;
+            padding: 10px 0;
             flex: 1;
             text-align: center;
             &:hover{
