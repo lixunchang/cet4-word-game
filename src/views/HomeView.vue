@@ -271,9 +271,9 @@ onUnmounted(() => {
         </div>
       </div>
       <div class="action">
-        <span @click="handleKeyPress({key:'ArrowLeft'})">上一个</span>
-        <span style="flex:2;" @click="handleKeyPress({key:' '})">空格</span>
         <span @click="handleKeyPress({key:'ArrowRight'})">下一个</span>
+        <span style="flex:2;" @click="handleKeyPress({key:' '})">空格</span>
+        <span @click="handleKeyPress({key:'ArrowLeft'})">上一个</span>
       </div>
     </div>
   </main>
@@ -389,6 +389,7 @@ onUnmounted(() => {
       height: calc(76vh - 250px);
       padding: 10px 14px 0;
       overflow-y: auto;
+      display: block;
       .explain{
         font-size: 18px;
         p{
@@ -419,8 +420,9 @@ onUnmounted(() => {
           padding: 6px 0;
           flex: 1;
           text-align: center;
-          &:hover{
-            background: #e2e2e2;
+          &:active{
+            background: #eee;
+            color: #999;
           }
         }
       }
@@ -436,8 +438,8 @@ onUnmounted(() => {
             padding: 10px 0;
             flex: 1;
             text-align: center;
-            &:hover{
-              background: #e2e2e2;
+            &:active{
+              background: #eee;
               color: #999;
             }
           }
