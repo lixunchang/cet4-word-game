@@ -16,6 +16,7 @@ export default defineConfig({
   },
   server: {
     port: 9000,
+    host: '0.0.0.0',
     proxy: {
       '/lyc8503': {
         target: 'https://cdn.jsdelivr.net/gh/lyc8503',

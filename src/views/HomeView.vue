@@ -3,11 +3,13 @@ import { DictionaryService } from '@/api/api';
 import lettersAudio from '@/utils/letter';
 import allWords from '@/utils/words';
 import { onMounted, onUnmounted, reactive, computed, watch } from 'vue';
-import { ElMessage } from 'element-plus';
+// import { ElMessage } from 'element-plus';
 import { useRouter, useRoute } from 'vue-router';
 // import { ElLoading } from 'element-plus'
 import { isLetter } from '@/utils/keyborad';
- 
+import Message from '@/components/IMessage.vue'
+
+
 const router = useRouter();
 const route = useRoute();
 
@@ -21,6 +23,10 @@ const state: any = reactive({
   explainStatus: '',
   enterAudio: 'mean_en',//'sentence'
   reviewSentence: false, // 复习状态展示词根和例句
+  msg:{
+    type:'error',
+    text: ''
+  },
   explain: {
     abandoned:{
       mean_en: 'forsaken by owner or keeper; free from constraint.',
@@ -38,6 +44,11 @@ const state: any = reactive({
 const currentWord = computed(()=>{
   return route.query.word || state.list?.[state.current]?.split(' ')[0] || ''
 })
+
+const showErrorMessage=(text = '')=>{
+  state.msg.text = text;
+  setTimeout(()=>state.msg.text = '', 2000);
+}
 
 const currentExplain = computed(()=>{
   return state.explain[currentWord.value]
@@ -69,7 +80,7 @@ const handleKeyPress = (event:any) => {
       state.reviewSentence = false;
       localStorage.setItem('current_index', state.current);
     }else{
-      ElMessage.error('已经是第一个了');
+      showErrorMessage('已经是第一个了');
     }
   }else if(['ArrowUp', 'ArrowDown', 'Tab'].includes(event.key)){
     event.preventDefault?.();
@@ -92,7 +103,7 @@ const handleKeyPress = (event:any) => {
   }else if(currentWord.value[state.audioIndex % (currentWord.value.length)]===event.key){
     const config = lettersAudio[event.key.toLowerCase()];
     if(!config?.url){
-      ElMessage.error('程序遇到Bug，请联系QQ: 907203644')
+      showErrorMessage('程序遇到Bug，请联系QQ: 907203644')
     }
     audio = new Audio(location.origin+location.pathname+config.url);
     audio.playbackRate = 2; // 播放速度为0.5 - 2倍
@@ -109,7 +120,7 @@ const handleKeyPress = (event:any) => {
   }else if(isLetter(event)){
     const errorChar = currentWord.value[state.audioIndex % currentWord.value.length];
     if(errorChar){
-      ElMessage.error('请输入：' + currentWord.value[state.audioIndex % currentWord.value.length])
+      showErrorMessage('请输入：' + currentWord.value[state.audioIndex % currentWord.value.length])
     }
   }
   if(audio){
@@ -196,6 +207,7 @@ onUnmounted(() => {
       <a class="help" target="_blank" href="https://gitee.com/gexinpai/cet4-word-game/blob/main/README.md">使用帮助</a>
       <span class="steps">{{state.current}} / {{state.list.length}}</span>
     </div>
+    <message v-show="state.msg.text" :text="state.msg.text" :type="state.msg.type"/>
     <div class="playground" :data-word="currentWord">
       <span class="char" v-for="(char,index) in currentWord" :key="currentWord+'-'+index" :class="{
         'audio_char': state.audioIndex < currentWord.length && state.audioIndex > index,
@@ -230,7 +242,7 @@ onUnmounted(() => {
           <span style="flex:1;text-align:left;color:#b2b2b2;">{{currentExplain.sentence_trans}}</span>
         </p>
       </div>
-      <div v-else-if="state.explainStatus">
+      <div v-else-if="state.explainStatus" class="explain_result">
         <span v-if="state.explainStatus === 'loading'" style="color:#999;">努力查询中...</span>
         <span style="cursor:pointer;" v-if="state.explainStatus === 'error'" @click="getWordExplain(currentWord)">查询失败，请刷新重试</span>
       </div>
@@ -238,36 +250,36 @@ onUnmounted(() => {
     <div class="key-board">
       <div class="letters">
         <div>
-          <span @click="handleKeyPress({key:'q'})">Q</span>
-          <span @click="handleKeyPress({key:'w'})">W</span>
-          <span @click="handleKeyPress({key:'e'})">E</span>
-          <span @click="handleKeyPress({key:'r'})">R</span>
-          <span @click="handleKeyPress({key:'t'})">T</span>
-          <span @click="handleKeyPress({key:'y'})">Y</span>
-          <span @click="handleKeyPress({key:'u'})">U</span>
-          <span @click="handleKeyPress({key:'i'})">I</span>
-          <span @click="handleKeyPress({key:'o'})">O</span>
-          <span @click="handleKeyPress({key:'p'})">P</span>
+          <span @click="handleKeyPress({key:'q', keyCode: 66})">Q</span>
+          <span @click="handleKeyPress({key:'w', keyCode: 66})">W</span>
+          <span @click="handleKeyPress({key:'e', keyCode: 66})">E</span>
+          <span @click="handleKeyPress({key:'r', keyCode: 66})">R</span>
+          <span @click="handleKeyPress({key:'t', keyCode: 66})">T</span>
+          <span @click="handleKeyPress({key:'y', keyCode: 66})">Y</span>
+          <span @click="handleKeyPress({key:'u', keyCode: 66})">U</span>
+          <span @click="handleKeyPress({key:'i', keyCode: 66})">I</span>
+          <span @click="handleKeyPress({key:'o', keyCode: 66})">O</span>
+          <span @click="handleKeyPress({key:'p', keyCode: 66})">P</span>
         </div>
         <div>
-          <span @click="handleKeyPress({key:'a'})">A</span>
-          <span @click="handleKeyPress({key:'s'})">S</span>
-          <span @click="handleKeyPress({key:'d'})">D</span>
-          <span @click="handleKeyPress({key:'f'})">F</span>
-          <span @click="handleKeyPress({key:'g'})">G</span>
-          <span @click="handleKeyPress({key:'h'})">H</span>
-          <span @click="handleKeyPress({key:'j'})">J</span>
-          <span @click="handleKeyPress({key:'k'})">K</span>
-          <span @click="handleKeyPress({key:'l'})">L</span>
+          <span @click="handleKeyPress({key:'a', keyCode: 66})">A</span>
+          <span @click="handleKeyPress({key:'s', keyCode: 66})">S</span>
+          <span @click="handleKeyPress({key:'d', keyCode: 66})">D</span>
+          <span @click="handleKeyPress({key:'f', keyCode: 66})">F</span>
+          <span @click="handleKeyPress({key:'g', keyCode: 66})">G</span>
+          <span @click="handleKeyPress({key:'h', keyCode: 66})">H</span>
+          <span @click="handleKeyPress({key:'j', keyCode: 66})">J</span>
+          <span @click="handleKeyPress({key:'k', keyCode: 66})">K</span>
+          <span @click="handleKeyPress({key:'l', keyCode: 66})">L</span>
         </div>
         <div>
-          <span @click="handleKeyPress({key:'z'})">Z</span>
-          <span @click="handleKeyPress({key:'x'})">X</span>
-          <span @click="handleKeyPress({key:'c'})">C</span>
-          <span @click="handleKeyPress({key:'v'})">V</span>
-          <span @click="handleKeyPress({key:'b'})">B</span>
-          <span @click="handleKeyPress({key:'n'})">N</span>
-          <span @click="handleKeyPress({key:'m'})">M</span>
+          <span @click="handleKeyPress({key:'z', keyCode: 66})">Z</span>
+          <span @click="handleKeyPress({key:'x', keyCode: 66})">X</span>
+          <span @click="handleKeyPress({key:'c', keyCode: 66})">C</span>
+          <span @click="handleKeyPress({key:'v', keyCode: 66})">V</span>
+          <span @click="handleKeyPress({key:'b', keyCode: 66})">B</span>
+          <span @click="handleKeyPress({key:'n', keyCode: 66})">N</span>
+          <span @click="handleKeyPress({key:'m', keyCode: 66})">M</span>
         </div>
       </div>
       <div class="action">
@@ -375,6 +387,10 @@ onUnmounted(() => {
   }
   .key-board{
     display: none;
+  }
+  .explain_result{
+    text-align: center;
+    padding-top: 66px;
   }
   @media screen and (max-width: 600px) {
     .playground {
