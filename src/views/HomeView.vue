@@ -18,6 +18,7 @@ const review: any = route.query.review || '0';
 
 const state: any = reactive({
   list: allWords[type] || allWords.etc4,
+  reviewType: review,
   current: 1,
   audioIndex: 0,
   explainStatus: '',
@@ -37,12 +38,19 @@ const state: any = reactive({
     },
     Christ: {
       mean_cn: '基督; 耶稣基督'
+    },
+    ninetheen:{
+      mean_cn: '十九'
     }
   }
 })
 
 const currentWord = computed(()=>{
   return route.query.word || state.list?.[state.current]?.split(' ')[0] || ''
+})
+
+const nextWord = computed(()=>{
+  return state.list?.[state.current+1]?.split(' ')[0] || ''
 })
 
 const showErrorMessage=(text = '')=>{
@@ -84,7 +92,7 @@ const handleKeyPress = (event:any) => {
     }
   }else if(['ArrowUp', 'ArrowDown', 'Tab'].includes(event.key)){
     event.preventDefault?.();
-    if(review!=='0' && !state.reviewSentence){
+    if(state.reviewType!=='0' && !state.reviewSentence){
       state.reviewSentence = true;
       return;
     }
@@ -128,7 +136,7 @@ const handleKeyPress = (event:any) => {
   }
 };
 
-const resetRouter=()=>router.push({ query: review !== '0'?{review}:{} });
+const resetRouter=()=>router.push({ query: state.reviewType !== '0'?{review:state.reviewType}:{} });
 
 const getWordExplain=(newWord: string)=>{
   state.explainStatus = 'loading';
@@ -148,7 +156,14 @@ const getWordExplain=(newWord: string)=>{
   })
 }
 
-
+watch(()=>state.reviewType,(newType)=>{
+  if(newType !=='0'){
+    state.audioIndex = state.reviewType * currentWord.value.length;
+  }else{
+    state.audioIndex = 0
+    resetRouter();
+  }
+})
 
 watch(()=>state.current, (val:number)=>{
   localStorage.setItem('current_index','' + val);
@@ -157,7 +172,20 @@ watch(()=>state.current, (val:number)=>{
 
 watch(currentWord, (newWord: string)=>{
   if(!newWord) return;
-  state.audioIndex = review * newWord.length;
+  state.audioIndex = state.reviewType * newWord.length;
+  if(state.explain[newWord]){
+    return;
+  }
+  const wordJson = localStorage.getItem(newWord);
+  if(wordJson){
+    state.explain[newWord] = JSON.parse(wordJson);
+    return;
+  }
+  getWordExplain(newWord);
+}, { immediate: true })
+
+watch(nextWord, (newWord: string)=>{
+  if(!newWord) return;
   if(state.explain[newWord]){
     return;
   }
@@ -204,7 +232,18 @@ onUnmounted(() => {
 <template>
   <main>
     <div class="header">
-      <a class="help" target="_blank" href="https://gitee.com/gexinpai/cet4-word-game/blob/main/README.md">使用帮助</a>
+      <span class="header-left">
+        <el-switch
+          v-model="state.reviewType"
+          class="review-type"
+          inline-prompt
+          active-text="复习"
+          inactive-text="陪练"
+          active-value="1"
+          inactive-value="0"
+        />
+        <a class="help" target="_blank" href="https://gitee.com/gexinpai/cet4-word-game/blob/main/README.md">使用帮助</a>
+      </span>
       <span class="steps">{{state.current}} / {{state.list.length}}</span>
     </div>
     <message v-show="state.msg.text" :text="state.msg.text" :type="state.msg.type"/>
@@ -229,15 +268,15 @@ onUnmounted(() => {
             <span style="flex:1;">{{currentExplain.mean_cn}}</span>
           </span>
         </p>
-        <p v-if="currentExplain.word_etyma&&(review==='0'||state.reviewSentence)">
+        <p v-if="currentExplain.word_etyma&&(state.reviewType==='0'||state.reviewSentence)">
           <label>词根</label>
           <span style="flex:1;color:#555;">{{currentExplain.word_etyma}}</span>
         </p>
-        <p v-if="currentExplain.sentence&&(review==='0'||state.reviewSentence)" @click="handleClickSentence(currentExplain.sentence)" style="cursor: pointer;">
+        <p v-if="currentExplain.sentence&&(state.reviewType==='0'||state.reviewSentence)" @click="handleClickSentence(currentExplain.sentence)" style="cursor: pointer;">
           <label>例句</label>
           <span style="flex:1;color:#666;">{{currentExplain.sentence}}</span>
         </p>
-        <p v-if="currentExplain.sentence_trans&&(review==='0'||state.reviewSentence)">
+        <p v-if="currentExplain.sentence_trans&&(state.reviewType==='0'||state.reviewSentence)">
           <label>翻译</label>
           <span style="flex:1;text-align:left;color:#b2b2b2;">{{currentExplain.sentence_trans}}</span>
         </p>
@@ -303,11 +342,30 @@ onUnmounted(() => {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      .help{
-        color: #444;
-        &:hover{
-          color: #999;
-          background: transparent;
+      .header-left{
+        display: flex;
+        align-items: center;
+        .help{
+          color: #444;
+          &:hover{
+            color: #999;
+            background: transparent;
+          }
+        }
+        .review-type{
+          margin: 0 12px;
+          opacity: 0.6;
+          &:hover{
+            opacity: 1;
+          }
+          :deep(.el-switch__core){
+            background: #333;
+            border-color: #444;
+          }
+          :deep(.el-switch__action){
+            background: #666;
+            border-color: #999;
+          }
         }
       }
       .steps{
