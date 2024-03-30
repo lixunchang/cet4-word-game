@@ -407,7 +407,7 @@ onUnmounted(() => {
     }
     .key-board{
       display: block;
-      padding: 6px 14px 12px;
+      padding: 6px 4px 0;
       height: 250px;
       .action{
         display: flex;
