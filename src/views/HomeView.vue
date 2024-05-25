@@ -2,7 +2,7 @@
 import { DictionaryService } from '@/api/api';
 import lettersAudio from '@/utils/letter';
 import allWords from '@/utils/words';
-import { onMounted, onUnmounted, reactive, computed, watch } from 'vue';
+import { onMounted, onUnmounted, reactive, computed, watch, ref } from 'vue';
 // import { ElMessage } from 'element-plus';
 import { useRouter, useRoute } from 'vue-router';
 // import { ElLoading } from 'element-plus'
@@ -13,13 +13,20 @@ import Message from '@/components/IMessage.vue'
 const router = useRouter();
 const route = useRoute();
 
+const skillInputRef = ref<any>(null);
+
+const handleSkillEnter=()=>{
+  state.skillFocus = false
+  skillInputRef.value.blur()
+}
+
 const type: any = route.query.type || 'etc4';
 const review: any = route.query.review || '0';
 
 const state: any = reactive({
   list: allWords[type] || allWords.etc4,
   reviewType: review,
-  current: 1,
+  current: 0,
   audioIndex: 0,
   explainStatus: '',
   enterAudio: 'mean_en',//'sentence'
@@ -41,8 +48,11 @@ const state: any = reactive({
     },
     ninetheen:{
       mean_cn: '十九'
-    }
-  }
+    },
+  },
+  currentSkillWord: '',
+  skills: undefined,
+  skillFocus: false
 })
 
 const currentWord = computed(()=>{
@@ -52,6 +62,17 @@ const currentWord = computed(()=>{
 const nextWord = computed(()=>{
   return state.list?.[state.current+1]?.split(' ')[0] || ''
 })
+
+const currentSkill = computed({
+        get() {
+          console.log('get-value', state.skills, currentWord.value, state.current)
+          return state.skills?.[currentWord.value]
+        },
+        set(value) {
+          console.log('set-value', state.skills, currentWord.value, state.current)
+          state.skills[currentWord.value] = value;
+        }
+      })
 
 const showErrorMessage=(text = '')=>{
   state.msg.text = text;
@@ -67,9 +88,14 @@ const handleClickSentence=(sentence: string)=>{
   audio.play();
 }
 
+const onSkillChange=(val:string)=>{
+  console.log('currentSkill',currentSkill, state.skills)
+  localStorage.setItem('word_skills', JSON.stringify({...state.skills,[currentWord.value]:val}))
+}
+
 
 const handleKeyPress = (event:any) => {
-  if(event.altKey||event.ctrlKey||event.metaKey){
+  if(state.skillFocus || event.altKey || event.ctrlKey || event.metaKey){
     return;
   }
   let audio:any;
@@ -207,6 +233,11 @@ watch(()=>route.query, (val)=>{
 onMounted(() => {
   window.addEventListener('keydown', handleKeyPress);
   state.current = route.query.index||localStorage.getItem('current_index') || 0;
+  const wordSkills = localStorage.getItem('word_skills');
+  if(wordSkills){
+    state.skills = JSON.parse(wordSkills);
+    console.log('---', state.skills);
+  }
   if(type==='etc4'){
     return;
   }
@@ -216,6 +247,7 @@ onMounted(() => {
     state.list = data.list;
     return;
   }
+
   DictionaryService.getWordList().then(({data}:any)=>{
     state.list = data.list;
     localStorage.setItem('word_list', JSON.stringify(data))
@@ -233,6 +265,10 @@ onUnmounted(() => {
   <main>
     <div class="header">
       <span class="header-left">
+        <el-link :underline="false" href="/#/search" target="_blank">模糊搜索</el-link>
+      </span>
+      <span class="header-right">
+        <span class="steps">{{state.current}} / {{state.list.length}}</span>
         <el-switch
           v-model="state.reviewType"
           class="review-type"
@@ -244,7 +280,6 @@ onUnmounted(() => {
         />
         <a class="help" target="_blank" href="https://gitee.com/gexinpai/cet4-word-game/blob/main/README.md">使用帮助</a>
       </span>
-      <span class="steps">{{state.current}} / {{state.list.length}}</span>
     </div>
     <message v-show="state.msg.text" :text="state.msg.text" :type="state.msg.type"/>
     <div class="playground" :data-word="currentWord">
@@ -255,6 +290,21 @@ onUnmounted(() => {
       }">
         {{char}}
       </span>
+      <div class="skill">
+        <el-input
+          ref="skillInputRef"
+          v-model="currentSkill" 
+          :placeholder="state.skillFocus?'记录下自己的速记方法，60个字内...':''" 
+          maxlength="60" 
+          :show-word-limit2="state.skillFocus" 
+          @focus="state.skillFocus = true" 
+          @blur="state.skillFocus = false" 
+          @keyup.enter="handleSkillEnter"
+          @change="onSkillChange"
+        >
+          <!-- <template v-if="state.skillFocus" #prepend>备注：</template> -->
+        </el-input>
+      </div>
     </div>
     <div class="explain_status">
       <div class="explain" v-if="currentExplain">
@@ -342,7 +392,16 @@ onUnmounted(() => {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      z-index: 1;
       .header-left{
+        display: flex;
+        align-items: center;
+        .search-icon{
+          font-size: 16px;
+          color: #fff;
+        }
+      }
+      .header-right{
         display: flex;
         align-items: center;
         .help{
@@ -384,6 +443,44 @@ onUnmounted(() => {
     justify-content: center;
     font-weight: bold;
     letter-spacing: 12px;
+    position: relative;
+    .skill{
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      .el-input{
+        width: 100%;
+        :deep(.el-input-group__prepend){
+          letter-spacing: 0;
+          border-radius: 0;
+          background: #000;
+          color: #fff;
+        }
+        :deep(.el-input__wrapper){
+          border-radius: 0;
+          border: none;
+          background: transparent;
+          box-shadow: none;
+          &.is-focus{
+            background: #000;
+            color: #fff;
+            border: none;
+            .el-input__inner{
+              text-align: center;
+            };
+          }
+          .el-input__inner{
+            color: #fff;
+            text-align: center;
+          }
+          .el-input__count-inner{
+            background: transparent;
+            letter-spacing: 0;
+          }
+        }
+      }
+    }
     .char{
       width: auto;
       min-width: 30px;

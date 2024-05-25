@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from 'vue';
-import { ImBox } from 'vue-demi-common'
+import { ImBox } from '@jcsk/vue-demi-common'
+import '@jcsk/vue-demi-common/dist/style.css'
 import { reactive } from 'vue';
 
 // const messageList = ref()

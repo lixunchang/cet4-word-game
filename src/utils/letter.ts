@@ -73,7 +73,7 @@ const lettersAudio: any = {
   },
   s:{
     url: 'letters/s.mp3',
-    volume: 0.5,
+    volume: 0.7,
   },
   t:{
     url: 'letters/t.mp3',
