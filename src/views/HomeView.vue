@@ -265,7 +265,7 @@ onUnmounted(() => {
   <main>
     <div class="header">
       <span class="header-left">
-        <el-link :underline="false" href="/#/search" target="_blank">模糊搜索</el-link>
+        <el-link :underline="false" href="https://gexinpai.github.io/cet4-word-game/#/search" target="_blank">模糊搜索</el-link>
       </span>
       <span class="header-right">
         <span class="steps">{{state.current}} / {{state.list.length}}</span>
