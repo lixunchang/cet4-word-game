@@ -2,7 +2,6 @@
 import { reactive, watch } from 'vue';
 import allWords from '@/utils/words';
 import { isAscending } from '@/utils/common';
-import WordExplain from '@/components/WordExplain.vue';
 import { DictionaryService } from '@/api/api';
 
 // const messageList = ref()
