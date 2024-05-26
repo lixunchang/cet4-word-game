@@ -14,10 +14,10 @@ const router = createRouter({
       name: '搜索',
       component: () => import('../views/SearchView.vue')
     },
-    {
-      path: '/test',
-      name: 'test',
-    },
+    // {
+    //   path: '/test',
+    //   name: 'test',
+    // },
   ]
 })
 
