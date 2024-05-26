@@ -11,8 +11,17 @@ const state = reactive({
   searchLimit: '0',
   searchWord:'',
   activeNames: [],
-  explain: {}
+  explain: {},
+  searchHistory: JSON.parse(localStorage.getItem('search-history')||'[]')
 })
+
+const limitStatus: any={
+  0:'success',
+  1:'warning',
+  2:'primary',
+  12:'danger',
+
+}
 
 
 const getWordExplain=(newWord: string)=>{
@@ -83,8 +92,14 @@ const handleSearch=(value)=>{
       return list;
     }
     return list;
-  },[])
-  console.log('eee=', state.searchList)
+  },[]);
+  const newSearchHistory = {
+    keyWord: state.searchWord, 
+    source: 'cet4', 
+    limit: state.searchLimit
+  };
+  state.searchHistory.unshift(newSearchHistory);
+  localStorage.setItem('search-history', JSON.stringify([newSearchHistory, ...state.searchHistory]))
 }
 
 
@@ -113,20 +128,25 @@ const handleSearch=(value)=>{
           <el-button type="primary" @click="handleSearch(state.searchWord)">搜索</el-button>
         </template>
       </el-input>
-      <el-collapse v-model="state.activeNames" class="search-result">
-        <el-collapse-item  v-for="item in state.searchList" :key="item" :name="item">
-          <template #title>
-            <div>
-              <span class="title-word">{{ item }}</span>
-              <span class="title-cn">{{ state.explain[item]&&state.explain[item].mean_cn }}</span>
-            </div>
-          </template>
-          <p class="explain-item"><span class="label">英义：</span>{{state.explain[item]&&state.explain[item].mean_en}}</p>
-          <p class="explain-item"><span class="label">词根：</span>{{state.explain[item]&&state.explain[item].word_etyma}}</p>
-          <p class="explain-item"><span class="label">例句：</span>{{state.explain[item]&&state.explain[item].sentence}}</p>
-          <p class="explain-item"><span class="label">翻译：</span>{{state.explain[item]&&state.explain[item].sentence_trans}}</p>
-        </el-collapse-item>
-      </el-collapse>
+      <div  class="search-result">
+        <div class="search-history">
+          <el-tag  v-for="i in state.searchHistory" :key="i.keyWord" :type="limitStatus[i.limit]">{{i.keyWord}}</el-tag>
+        </div>
+        <el-collapse v-model="state.activeNames">
+          <el-collapse-item  v-for="item in state.searchList" :key="item" :name="item">
+            <template #title>
+              <div>
+                <span class="title-word">{{ item }}</span>
+                <span class="title-cn">{{ state.explain[item]&&state.explain[item].mean_cn }}</span>
+              </div>
+            </template>
+            <p class="explain-item"><span class="label">英义：</span>{{state.explain[item]&&state.explain[item].mean_en}}</p>
+            <p class="explain-item"><span class="label">词根：</span>{{state.explain[item]&&state.explain[item].word_etyma}}</p>
+            <p class="explain-item"><span class="label">例句：</span>{{state.explain[item]&&state.explain[item].sentence}}</p>
+            <p class="explain-item"><span class="label">翻译：</span>{{state.explain[item]&&state.explain[item].sentence_trans}}</p>
+          </el-collapse-item>
+        </el-collapse>
+      </div>
       <!-- <div class="list">
         <div class="item" v-for="item in state.searchList" :key="item">{{item}}</div>
       </div> -->
@@ -150,12 +170,20 @@ const handleSearch=(value)=>{
         top: 20px;
         left: 50%;
         transform: translateX(-50%);
-        margin-bottom: 20px; 
         z-index: 999;
       }
+      .search-history{
+        max-width: 900px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
       .search-result{
-        height: calc(100% - 32px);
-        margin-top: 52px;
+        height: calc(100% - 40px);
+        margin-top: 40px;
         overflow: auto;
       }
     }
