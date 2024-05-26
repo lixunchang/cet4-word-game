@@ -66,3 +66,10 @@
 - 左箭头————上一个单词；
 - Enter键或右箭头————下一个单词；
 - Shift或上箭头或下箭头————英文释义或例句配音
+
+
+
+### 开发调试
+1. npm run build
+2. 切gh-pages分支，覆盖assets和index.html文件
+3. git push

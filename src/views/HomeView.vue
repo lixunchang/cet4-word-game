@@ -51,7 +51,7 @@ const state: any = reactive({
     },
   },
   currentSkillWord: '',
-  skills: undefined,
+  skills: {},
   skillFocus: false
 })
 
@@ -70,6 +70,9 @@ const currentSkill = computed({
         },
         set(value) {
           console.log('set-value', state.skills, currentWord.value, state.current)
+          if(!state.skills){
+            state.skills = {};
+          }
           state.skills[currentWord.value] = value;
         }
       })
