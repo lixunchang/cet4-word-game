@@ -5,10 +5,21 @@
 
 [意见或bug反馈地址](https://txc.qq.com/products/643117)
 
+#### 练习模式
+<img width="1677" alt="image" src="https://github.com/user-attachments/assets/50ae813e-23d9-44cc-8ac2-f55b80ba0257">
+
+#### 模糊查询
+<img width="1676" alt="image" src="https://github.com/user-attachments/assets/8bdcc396-d7e3-4764-a4cf-e2447dc7c807">
+
+#### 移动端
+<img width="393" alt="image" src="https://github.com/user-attachments/assets/63d83f08-c243-4f65-b224-81db091446c8">
+
 - 电脑端（已适配）；
 - 手机端（已适配）；
 
 ## 练习模式与复习模式
+> 单个字母读音在初次加载时会有延迟，读音在加载过之后速度有所提升；
+> 建议多练习几个单词，把所有字母读音都缓存一遍后，效果会流畅一些；
 
 ### 玩法一：练习
 
