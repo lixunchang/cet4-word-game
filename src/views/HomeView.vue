@@ -268,7 +268,7 @@ onUnmounted(() => {
   <main>
     <div class="header">
       <span class="header-left">
-        <el-link :underline="false" href="https://todopai.github.io/cet4-word-game/#/search" target="_blank">模糊搜索</el-link>
+        <el-link :underline="false" href="https://lixunchang.github.io/cet4-word-game/#/search" target="_blank">模糊搜索</el-link>
       </span>
       <span class="header-right">
         <span class="steps">{{state.current}} / {{state.list.length}}</span>
@@ -281,7 +281,7 @@ onUnmounted(() => {
           active-value="1"
           inactive-value="0"
         />
-        <a class="help" target="_blank" href="https://github.com/todopai/cet4-word-game/blob/main/README.md">使用帮助</a>
+        <a class="help" target="_blank" href="https://github.com/lixunchang/cet4-word-game/blob/main/README.md">使用帮助</a>
       </span>
     </div>
     <message v-show="state.msg.text" :text="state.msg.text" :type="state.msg.type"/>
