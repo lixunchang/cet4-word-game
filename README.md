@@ -80,7 +80,3 @@
 
 
 
-### 本地开发与版本调试
-1. npm run build
-2. 切gh-pages分支，覆盖assets和index.html文件
-3. git push
