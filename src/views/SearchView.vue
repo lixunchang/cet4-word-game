@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { reactive, watch } from 'vue';
 import allWords from '@/utils/words';
 import { isAscending } from '@/utils/common';
@@ -15,7 +15,7 @@ const state = reactive({
   searchHistory: JSON.parse(localStorage.getItem('search-history')||'[]')
 })
 
-const limitStatus: any={
+const limitStatus={
   0:'success',
   1:'warning',
   2:'primary',
@@ -24,7 +24,7 @@ const limitStatus: any={
 }
 
 
-const getWordExplain=(newWord: string)=>{
+const getWordExplain=(newWord)=>{
   console.log('newWord', newWord)
   if(!state.explain[newWord]){
     state.explain[newWord]={};
@@ -35,7 +35,7 @@ const getWordExplain=(newWord: string)=>{
   //   text: '这个单词几个意思...',
   //   fullscreen: false
   // })
-  DictionaryService.getWordMean(newWord).then(({data}:any)=>{
+  DictionaryService.getWordMean(newWord).then(({data})=>{
     state.explain[newWord] = data;
     localStorage.setItem(newWord, JSON.stringify(data))
     state.explain[newWord].loadingStatus = '';
