@@ -1,6 +1,6 @@
 # 构建 VitePress 站点并将其部署到 GitHub Pages 的示例工作流程
 #
-name: Deploy VitePress site to Pages
+name: Deploy Vite site to Pages
 
 on:
   # 在针对 `main` 分支的推送上运行。如果你
@@ -43,8 +43,8 @@ jobs:
         uses: actions/configure-pages@v4
       - name: Install dependencies
         run: npm ci # 或 pnpm install / yarn install / bun install
-      - name: Build with VitePress
-        run: npm run docs:build # 或 pnpm docs:build / yarn docs:build / bun run docs:build
+      - name: Build with Vite
+        run: npm run build # 或 pnpm docs:build / yarn docs:build / bun run docs:build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
