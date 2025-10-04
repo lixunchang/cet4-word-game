@@ -49,9 +49,8 @@
       // 预加载单个字母音频
       preloadLetter(letter) {
         return new Promise((resolve) => {
-          console.log(`字母 ${letter} 音频已缓存`, this.letterAudios, this.letterAudios.has(letter));
           if (this.letterAudios.has(letter)) {
-            console.log(`字母 ${letter} 音频已缓存`, this.letterAudios.get(letter));
+            // console.log(`字母 ${letter} 音频已缓存`, this.letterAudios.get(letter));
             resolve(this.letterAudios.get(letter));
             return;
           }
@@ -74,7 +73,7 @@
           };
           
           this.letterAudios.set(letter, letterAudio);
-          console.log(`字母 ${letter} 音频预加载完成`);
+          // console.log(`字母 ${letter} 音频预加载完成`);
           resolve(letterAudio);
         });
       }

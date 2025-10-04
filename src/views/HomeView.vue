@@ -8,6 +8,7 @@ import { useRouter, useRoute } from 'vue-router';
 // import { ElLoading } from 'element-plus'
 import { isLetter } from '@/utils/keyborad';
 import Message from '@/components/IMessage.vue'
+import HelpModal from '@/components/HelpModal.vue'
 
 import audioManager from '@/utils/audio';
 
@@ -16,6 +17,7 @@ const router = useRouter();
 const route = useRoute();
 
 const skillInputRef = ref<any>(null);
+const showHelpModal = ref(false);
 
 const handleSkillEnter=()=>{
   state.skillFocus = false
@@ -102,7 +104,6 @@ const handleKeyPress = (event:any) => {
   if(state.skillFocus || event.altKey || event.ctrlKey || event.metaKey){
     return;
   }
-  let audio:any;
   if(['ArrowRight','Enter'].includes(event.key)){
     state.current++;
     state.audioIndex = 0;
@@ -120,7 +121,7 @@ const handleKeyPress = (event:any) => {
     }else{
       showErrorMessage('已经是第一个了');
     }
-  }else if(['ArrowUp', 'ArrowDown', 'Tab'].includes(event.key)){
+  }else if(['ArrowUp', 'ArrowDown', 'Tab', 'Shift'].includes(event.key)){
     event.preventDefault?.();
     if(state.reviewType!=='0' && !state.reviewSentence){
       state.reviewSentence = true;
@@ -249,6 +250,13 @@ onMounted(() => {
     state.skills = JSON.parse(wordSkills);
     console.log('---', state.skills);
   }
+  
+  // 检查是否需要显示帮助弹窗
+  const helpModalClosed = localStorage.getItem('helpModalClosed');
+  if (!helpModalClosed) {
+    showHelpModal.value = true;
+  }
+  
   if(type==='etc4'){
     return;
   }
@@ -289,7 +297,7 @@ onUnmounted(() => {
           active-value="1"
           inactive-value="0"
         />
-        <a class="help" target="_blank" href="https://github.com/lixunchang/cet4-word-game/blob/main/README.md">使用帮助</a>
+        <el-button class="help-button" @click="showHelpModal = true">使用帮助</el-button>
       </span>
     </div>
     <message v-show="state.msg.text" :text="state.msg.text" :type="state.msg.type"/>
@@ -389,6 +397,7 @@ onUnmounted(() => {
       </div>
     </div>
   </main>
+  <HelpModal v-model="showHelpModal" />
 </template>
 <style lang="scss" scoped>
   main{
@@ -415,8 +424,10 @@ onUnmounted(() => {
       .header-right{
         display: flex;
         align-items: center;
-        .help{
+        .help-button{
           color: #444;
+          background: transparent;
+          border: none;
           &:hover{
             color: #999;
             background: transparent;
