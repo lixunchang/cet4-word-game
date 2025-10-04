@@ -199,7 +199,7 @@ const handleKeyPress = (event:any) => {
     if(errorChar){
       showErrorMessage('请输入：' + currentWord.value[state.audioIndex % currentWord.value.length])
     }
-    audioManager.playErrorSound('error');
+    audioManager.playErrorSound();
   }
   // if(audio){
   //   audio.play();

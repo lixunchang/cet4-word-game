@@ -70,7 +70,7 @@ const fetchReadme = async () => {
     }
     
     markdownContent.value = await response.text();
-  } catch (err) {
+  } catch (err: Error | any) {
     error.value = err.message || 'Failed to load README.md';
     console.error('Failed to fetch README.md:', err);
   } finally {
