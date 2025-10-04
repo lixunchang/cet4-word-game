@@ -63,7 +63,7 @@ const fetchReadme = async () => {
     error.value = null;
     
     // 从 public 目录获取 README.md
-    const response = await fetch('/README.md');
+    const response = await fetch(`${location.origin}${location.pathname}/README.md`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
