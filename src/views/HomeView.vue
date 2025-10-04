@@ -9,6 +9,8 @@ import { useRouter, useRoute } from 'vue-router';
 import { isLetter } from '@/utils/keyborad';
 import Message from '@/components/IMessage.vue'
 
+import audioManager from '@/utils/audio';
+
 
 const router = useRouter();
 const route = useRoute();
@@ -87,8 +89,7 @@ const currentExplain = computed(()=>{
 })
 
 const handleClickSentence=(sentence: string)=>{
-  const audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${sentence}`);
-  audio.play();
+  audioManager.playOnlineAudio(sentence);
 }
 
 const onSkillChange=(val:string)=>{
@@ -126,29 +127,33 @@ const handleKeyPress = (event:any) => {
       return;
     }
     if(currentExplain.value?.[state.enterAudio]){
-      audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentExplain.value[state.enterAudio]}`);
+      // audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentExplain.value[state.enterAudio]}`);
+      audioManager.playOnlineAudio(currentExplain.value[state.enterAudio]);
       state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
     }else if(currentExplain.value){
       state.enterAudio = state.enterAudio === 'mean_en'?'sentence':'mean_en';
     }
   }else if (event.key === ' ') {
-    audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentWord.value}`);
+    // audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${currentWord.value}`);
+    audioManager.playOnlineAudio(currentWord.value);
     // console.log('message==>', state.audioIndex)
     // if(state.audioIndex > (currentWord.value.length-1)*2){
     //   state.audioIndex = 0
     // }
+    // audioManager.playLetter(event.key.toLowerCase());
   }else if(currentWord.value[state.audioIndex % (currentWord.value.length)]===event.key){
     const config = lettersAudio[event.key.toLowerCase()];
     if(!config?.url){
       showErrorMessage('程序遇到Bug，请联系QQ: 907203644')
     }
-    audio = new Audio(location.origin+location.pathname+config.url);
-    audio.playbackRate = 2; // 播放速度为0.5 - 2倍
-    Object.keys(config).forEach(key=>{
-      if(key!=='url'){
-        audio[key] = config[key];
-      }
-    });
+    // audio = new Audio(location.origin+location.pathname+config.url);
+    // audio.playbackRate = 2; // 播放速度为0.5 - 2倍
+    // Object.keys(config).forEach(key=>{
+    //   if(key!=='url'){
+    //     audio[key] = config[key];
+    //   }
+    // });
+    audioManager.playLetter(event.key.toLowerCase());
     if(state.audioIndex > (currentWord.value.length-1)*2){
       state.audioIndex = 0
     }else{
@@ -159,10 +164,11 @@ const handleKeyPress = (event:any) => {
     if(errorChar){
       showErrorMessage('请输入：' + currentWord.value[state.audioIndex % currentWord.value.length])
     }
+    audioManager.playErrorSound('error');
   }
-  if(audio){
-    audio.play();
-  }
+  // if(audio){
+  //   audio.play();
+  // }
 };
 
 const resetRouter=()=>router.push({ query: state.reviewType !== '0'?{review:state.reviewType}:{} });
@@ -202,6 +208,7 @@ watch(()=>state.current, (val:number)=>{
 watch(currentWord, (newWord: string)=>{
   if(!newWord) return;
   state.audioIndex = state.reviewType * newWord.length;
+  audioManager.preloadAllOnlineAudios([newWord, state.explain[currentWord.value]?.mean_en, state.explain[currentWord.value]?.sentence].filter(Boolean));
   if(state.explain[newWord]){
     return;
   }
@@ -234,6 +241,7 @@ watch(()=>route.query, (val)=>{
 
 
 onMounted(() => {
+  audioManager.preloadAllLetters()
   window.addEventListener('keydown', handleKeyPress);
   state.current = route.query.index||localStorage.getItem('current_index') || 0;
   const wordSkills = localStorage.getItem('word_skills');
