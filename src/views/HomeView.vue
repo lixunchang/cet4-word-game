@@ -28,6 +28,7 @@ const type: any = route.query.type || 'etc4';
 const review: any = route.query.review || '0';
 
 const state: any = reactive({
+  type,
   list: allWords[type] || allWords.etc4,
   reviewType: review,
   current: 0,
@@ -99,6 +100,39 @@ const onSkillChange=(val:string)=>{
   localStorage.setItem('word_skills', JSON.stringify({...state.skills,[currentWord.value]:val}))
 }
 
+const switchWordList = (newType: string) => {
+  state.type = newType;
+  state.current = 0;
+  localStorage.setItem('current_index', '0');
+  
+  if (newType === 'etc4') {
+    state.list = allWords.etc4;
+  } else if (newType === 'all') {
+    const wordsJson = localStorage.getItem('word_list');
+    if (wordsJson) {
+      const data = JSON.parse(wordsJson);
+      state.list = data.list;
+    } else {
+      DictionaryService.getWordList().then(({data}:any)=>{
+        state.list = data.list;
+        localStorage.setItem('word_list', JSON.stringify(data))
+      })
+    }
+  } else if (newType === 'custom') {
+    // 自定义单词列表，这里可以添加相关逻辑
+    const wordsJson = localStorage.getItem('custom_word_list');
+    if (wordsJson) {
+      const data = JSON.parse(wordsJson);
+      state.list = data.list || [];
+    } else {
+      // 如果没有自定义列表，则初始化为空数组
+      state.list = [];
+    }
+  }
+  
+  // 更新路由但不刷新页面
+  router.replace({ query: { ...route.query, type: newType } });
+}
 
 const handleKeyPress = (event:any) => {
   if(state.skillFocus || event.altKey || event.ctrlKey || event.metaKey){
@@ -260,17 +294,25 @@ onMounted(() => {
   if(type==='etc4'){
     return;
   }
-  const wordsJson = localStorage.getItem('word_list');
-  if(wordsJson){
-    const data = JSON.parse(wordsJson);
-    state.list = data.list;
-    return;
-  }
+  if(type==='all'){
+      const wordsJson = localStorage.getItem('word_list');
+      if(wordsJson){
+        const data = JSON.parse(wordsJson);
+        state.list = data.list;
+        return;
+      }
 
-  DictionaryService.getWordList().then(({data}:any)=>{
-    state.list = data.list;
-    localStorage.setItem('word_list', JSON.stringify(data))
-  })
+      DictionaryService.getWordList().then(({data}:any)=>{
+        state.list = data.list;
+        localStorage.setItem('word_list', JSON.stringify(data))
+      })
+  }else if(type === 'custom'){
+    const wordsJson = localStorage.getItem('word_list');
+    if(wordsJson){
+      const data = JSON.parse(wordsJson);
+      state.list = data.list;
+    }
+  }
 });
 
 
@@ -284,6 +326,19 @@ onUnmounted(() => {
   <main>
     <div class="header">
       <span class="header-left">
+        <!-- <el-segmented
+          v-model="state.type"
+          size="small"
+          class="type-select"
+          :options="[{label:'四级词汇',value:'etc4'},{label:'10000+',value:'all'},{label:'自定义',value:'custom'}]"
+          style="background: #333;"
+          @change="switchWordList"
+        /> -->
+        <el-select class="type-select" v-model="state.type" @change="switchWordList" size="small" style="background: #333; width: 120px; margin-right: 10px;">
+          <el-option label="四级词汇" value="etc4"></el-option>
+          <el-option label="10000+" value="all"></el-option>
+          <el-option label="自定义词汇" value="custom"></el-option>
+        </el-select>
         <el-link :underline="false" href="https://lixunchang.github.io/cet4-word-game/#/search" target="_blank">模糊搜索</el-link>
       </span>
       <span class="header-right">
@@ -419,6 +474,36 @@ onUnmounted(() => {
         .search-icon{
           font-size: 16px;
           color: #fff;
+        }
+        .type-select{
+          margin-right: 12px;
+          :deep(.el-select__wrapper){
+            background: #333;
+            border-color: #000;
+            color: #fff;
+            box-shadow: none;
+            &:hover{
+              background: #444;
+              border-color: #555;
+              color: #fff;
+            }
+
+          }
+          :deep(.el-segmented__item){
+            background: #333;
+            border-color: #000;
+            color: #fff;
+            &:hover{
+              background: #444;
+              border-color: #555;
+              color: #fff;
+            }
+          }
+          :deep(.el-segmented__item.is-active){
+            background: #666;
+            border-color: #999;
+            color: #fff;
+          }
         }
       }
       .header-right{
